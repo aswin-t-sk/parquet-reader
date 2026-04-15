@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Private Parquet Explorer</title>
+    <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.58.0/build/stlite.js"></script>
+    <style>
+      #loader {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        height: 100vh; font-family: sans-serif; color: #555;
+      }
+      .spinner {
+        border: 4px solid #f3f3f3; border-top: 4px solid #ff4b4b;
+        border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px;
+      }
+      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+  </head>
+  <body>
+    <div id="loader">
+      <div class="spinner"></div>
+      <h2>Setting up Private Python Environment...</h2>
+      <p>Bypassing local security blocks (this takes a few seconds on first load).</p>
+    </div>
+    <div id="root"></div>
+
+    <script>
+      stlite.mount({
+        requirements: ["pandas", "pyarrow"],
+        entrypoint: "app.py",
+        files: {
+          "app.py": `
+import streamlit as st
+import pandas as pd
+
+# Professional UI config
+st.set_page_config(page_title="Parquet Explorer", layout="wide", initial_sidebar_state="collapsed")
+
+st.title("📂 Parquet Data Explorer")
+st.markdown("---")
+
+# Reassuring Privacy Badge
+st.success("🔒 **Privacy Active:** You are on a static HTTPS page. When you upload a file, it is read directly into your browser's RAM. No data is sent to GitHub or any backend server.")
+
+uploaded_file = st.file_uploader("Upload a .parquet file from your PC", type=["parquet"])
+
+if uploaded_file:
+    try:
+        # The browser uses WASM pyarrow to read this locally
+        df = pd.read_parquet(uploaded_file)
+        
+        # Display Metrics
+        m1, m2, m3 = st.columns(3)
+        m1.metric("Total Rows", f"{len(df):,}")
+        m2.metric("Total Columns", len(df.columns))
+        m3.metric("Est. RAM Usage", f"{df.memory_usage(deep=True).sum() / 1024**2:.2f} MB")
+
+        # Display Data
+        st.subheader("Interactive Data Preview")
+        st.dataframe(df, use_container_width=True)
+        
+        # Expandable Schema
+        with st.expander("View Column Data Types"):
+            st.dataframe(df.dtypes.astype(str).to_frame(name="Data Type"), use_container_width=True)
+
+    except Exception as e:
+        st.error(f"Error reading file: {e}")
+        st.info("Check if the file is a valid Apache Parquet format.")
+else:
+    st.info("Upload a file above to activate the dashboard.")
+`
+        }
+      }, document.getElementById("root"));
+
+      const observer = new MutationObserver(() => {
+        if (document.querySelector('.stApp')) {
+          document.getElementById('loader').style.display = 'none';
+          observer.disconnect();
+        }
+      });
+      observer.observe(document.getElementById('root'), { childList: true });
+    </script>
+  </body>
+</html>
