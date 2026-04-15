@@ -6,7 +6,14 @@
     <title>Parquet Explorer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/hyparquet@1.5.0/dist/hyparquet.min.js"></script>
+    <!-- hyparquet is ESM-only; loaded via esm.sh which works on any static host -->
+    <script type="module" id="mainScript">
+    // Imported at top level so the IIFE below can use it via window.__parquetRead
+    import { parquetRead } from 'https://esm.sh/hyparquet@1.5.0';
+    window.__parquetRead = parquetRead;
+    window.__hyparquetReady = true;
+    document.dispatchEvent(new Event('hyparquet:ready'));
+    </script>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -633,7 +640,7 @@
             <div class="logo-icon">⬡</div>
             <span class="logo-text">pq.explorer</span>
         </div>
-        <div class="logo-sub">v2.0 · client-side</div>
+        <div class="logo-sub"> User End Secure Parquet Explorer</div>
     </div>
 
     <label id="dropzone">
@@ -764,36 +771,31 @@
     }
 
     async function parseParquet(arrayBuffer, file) {
-        // Build an AsyncBuffer wrapper (required by modern hyparquet)
+        // Wait for the ES module to finish loading if it hasn't yet
+        if (!window.__hyparquetReady) {
+            await new Promise((resolve, reject) => {
+                const timeout = setTimeout(() => reject(new Error(
+                    'hyparquet failed to load. Make sure esm.sh is reachable (requires internet on first load to fetch the library; after that it is cached).'
+                )), 15000);
+                document.addEventListener('hyparquet:ready', () => { clearTimeout(timeout); resolve(); }, { once: true });
+            });
+        }
+
+        const parquetRead = window.__parquetRead;
+
+        // Wrap the ArrayBuffer as an AsyncBuffer (hyparquet 1.x API)
         const asyncBuf = {
             byteLength: arrayBuffer.byteLength,
-            slice: (start, end) => {
-                return Promise.resolve(arrayBuffer.slice(start, end));
-            }
+            slice: (start, end) => Promise.resolve(arrayBuffer.slice(start, end))
         };
 
-        // Try using global hyparquet object
-        const lib = window.hyparquet || window.hyparquetJs;
-
-        if (!lib) {
-            throw new Error('hyparquet library not loaded. Check your network connection.');
-        }
-
-        const readFn = lib.parquetRead;
-        if (typeof readFn !== 'function') {
-            throw new Error('parquetRead function not found in hyparquet.');
-        }
-
         return new Promise((resolve, reject) => {
-            readFn({
+            parquetRead({
                 file: asyncBuf,
+                rowFormat: 'object', 
                 onComplete: (data) => {
-                    try {
-                        renderAll(data, file);
-                        resolve();
-                    } catch(e) {
-                        reject(e);
-                    }
+                    try { renderAll(data, file); resolve(); }
+                    catch(e) { reject(e); }
                 }
             }).catch(reject);
         });
