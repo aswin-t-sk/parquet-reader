@@ -5,37 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parquet Explorer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <!-- hyparquet is ESM-only; loaded via esm.sh which works on any static host -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script type="module" id="mainScript">
-    // Imported at top level so the IIFE below can use it via window.__parquetRead
-    import { parquetRead } from 'https://esm.sh/hyparquet@1.5.0';
-    window.__parquetRead = parquetRead;
-    window.__hyparquetReady = true;
-    document.dispatchEvent(new Event('hyparquet:ready'));
+        import { parquetRead } from 'https://esm.sh/hyparquet@1.5.0';
+        window.__parquetRead = parquetRead;
+        window.__hyparquetReady = true;
+        document.dispatchEvent(new Event('hyparquet:ready'));
     </script>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --bg: #0d0f14;
-            --surface: #13161e;
-            --surface2: #1a1e28;
-            --surface3: #222636;
-            --border: #2a2f42;
-            --border-bright: #3d4460;
-            --text: #c8d0e8;
-            --text-dim: #6b7394;
-            --text-bright: #eef1fb;
-            --accent: #4af0c4;
-            --accent2: #7c8bff;
-            --accent3: #ff6b9d;
-            --accent-dim: rgba(74,240,196,0.1);
-            --accent2-dim: rgba(124,139,255,0.1);
-            --row-hover: rgba(74,240,196,0.04);
-            --mono: 'IBM Plex Mono', monospace;
-            --sans: 'IBM Plex Sans', sans-serif;
-            --radius: 6px;
+            --bg: #080a0f;
+            --surface: #0e1018;
+            --surface2: #141720;
+            --surface3: #1c2030;
+            --surface4: #232840;
+            --border: #1f2436;
+            --border-bright: #2e3550;
+            --text: #a8b4d8;
+            --text-dim: #4a5478;
+            --text-bright: #e8eeff;
+            --accent: #00e5a0;
+            --accent2: #5f7fff;
+            --accent3: #ff5f8f;
+            --accent4: #ffb347;
+            --accent-dim: rgba(0,229,160,0.07);
+            --accent2-dim: rgba(95,127,255,0.07);
+            --glow: rgba(0,229,160,0.15);
+            --glow2: rgba(95,127,255,0.12);
+            --mono: 'JetBrains Mono', monospace;
+            --sans: 'Syne', sans-serif;
+            --radius: 8px;
+            --radius-lg: 14px;
         }
 
         body {
@@ -47,132 +49,135 @@
             overflow: hidden;
         }
 
-        /* ── SIDEBAR ────────────────────────────────────── */
+        /* ── SIDEBAR ── */
         #sidebar {
-            width: 280px;
+            width: 270px;
             flex-shrink: 0;
             background: var(--surface);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            position: relative;
+        }
+
+        #sidebar::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0;
+            width: 1px; height: 100%;
+            background: linear-gradient(180deg, transparent, var(--accent2) 40%, var(--accent) 70%, transparent);
+            opacity: 0.3;
         }
 
         .sidebar-header {
-            padding: 1.5rem 1.25rem 1rem;
+            padding: 1.5rem 1.25rem 1.25rem;
             border-bottom: 1px solid var(--border);
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.25rem;
+            gap: 0.6rem;
+            margin-bottom: 0.3rem;
         }
 
         .logo-icon {
-            width: 28px;
-            height: 28px;
+            width: 30px; height: 30px;
             background: linear-gradient(135deg, var(--accent), var(--accent2));
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
+            border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px;
+            box-shadow: 0 0 12px var(--glow);
             flex-shrink: 0;
         }
 
         .logo-text {
-            font-family: var(--mono);
-            font-size: 0.95rem;
-            font-weight: 600;
+            font-family: var(--sans);
+            font-size: 1rem;
+            font-weight: 700;
             color: var(--text-bright);
-            letter-spacing: 0.02em;
+            letter-spacing: 0.01em;
         }
 
         .logo-sub {
-            font-size: 0.7rem;
+            font-size: 0.63rem;
             color: var(--text-dim);
             font-family: var(--mono);
-            letter-spacing: 0.05em;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
-            margin-left: 36px;
+            margin-left: 38px;
         }
 
-        /* ── DROPZONE ───────────────────────────────────── */
+        /* DROPZONE */
         #dropzone {
-            margin: 1rem 1.25rem;
+            margin: 1rem 1rem 0.5rem;
             border: 1.5px dashed var(--border-bright);
-            border-radius: var(--radius);
-            padding: 1.5rem 1rem;
+            border-radius: var(--radius-lg);
+            padding: 1.4rem 1rem;
             text-align: center;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.25s ease;
             background: var(--surface2);
             position: relative;
+            overflow: hidden;
         }
 
-        #dropzone:hover, #dropzone.dragover {
-            border-color: var(--accent);
-            background: var(--accent-dim);
+        #dropzone::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 50% 0%, var(--accent-dim) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.25s;
         }
 
-        #dropzone.dragover { transform: scale(1.01); }
+        #dropzone:hover::before, #dropzone.dragover::before { opacity: 1; }
+        #dropzone:hover, #dropzone.dragover { border-color: var(--accent); }
+        #dropzone.dragover { transform: scale(1.015); border-style: solid; }
 
-        .dropzone-icon {
-            font-size: 1.75rem;
-            margin-bottom: 0.5rem;
-            display: block;
-        }
-
-        .dropzone-label {
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            line-height: 1.5;
-        }
-
-        .dropzone-label strong {
-            color: var(--accent);
-            font-weight: 500;
-        }
-
+        .dropzone-icon { font-size: 1.6rem; margin-bottom: 0.4rem; display: block; position: relative; }
+        .dropzone-label { font-size: 0.78rem; color: var(--text-dim); line-height: 1.6; position: relative; }
+        .dropzone-label strong { color: var(--accent); font-weight: 600; }
         #fileInput { display: none; }
 
-        /* ── FILE STATUS ────────────────────────────────── */
+        /* FILE STATUS */
         #fileStatus {
-            margin: 0 1.25rem 0.75rem;
-            padding: 0.625rem 0.75rem;
+            margin: 0 1rem 0.5rem;
+            padding: 0.5rem 0.75rem;
             background: var(--surface2);
-            border-radius: var(--radius);
+            border-radius: 6px;
             border: 1px solid var(--border);
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-family: var(--mono);
             color: var(--text-dim);
             display: none;
             word-break: break-all;
         }
+        #fileStatus.active { display: block; border-color: rgba(0,229,160,0.3); color: var(--accent); }
+        #fileStatus.error { display: block; border-color: rgba(255,95,143,0.3); color: var(--accent3); }
 
-        #fileStatus.active {
-            display: block;
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-
-        #fileStatus.error {
-            display: block;
-            border-color: var(--accent3);
-            color: var(--accent3);
-        }
-
-        /* ── SCHEMA PANEL ───────────────────────────────── */
-        .schema-title {
-            padding: 0.75rem 1.25rem 0.5rem;
-            font-size: 0.65rem;
+        /* SCHEMA */
+        .schema-section-header {
+            padding: 0.75rem 1.25rem 0.4rem;
+            font-size: 0.6rem;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.12em;
             color: var(--text-dim);
-            font-weight: 600;
+            font-weight: 700;
             border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .schema-count {
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            background: var(--surface3);
+            padding: 0.1rem 0.4rem;
+            border-radius: 3px;
+            color: var(--text-dim);
         }
 
         #schemaList {
@@ -181,26 +186,27 @@
             padding: 0.25rem 0.75rem 1rem;
         }
 
-        #schemaList::-webkit-scrollbar { width: 4px; }
+        #schemaList::-webkit-scrollbar { width: 3px; }
         #schemaList::-webkit-scrollbar-track { background: transparent; }
         #schemaList::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
         .schema-item {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.3rem 0.5rem;
-            border-radius: 4px;
-            cursor: default;
-            transition: background 0.15s;
-            font-size: 0.8rem;
+            gap: 0.45rem;
+            padding: 0.28rem 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 0.78rem;
+            position: relative;
         }
 
         .schema-item:hover { background: var(--surface3); }
+        .schema-item:hover .schema-name { color: var(--text-bright); }
 
         .schema-dot {
-            width: 6px;
-            height: 6px;
+            width: 5px; height: 5px;
             border-radius: 50%;
             flex-shrink: 0;
         }
@@ -212,33 +218,50 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            font-size: 0.75rem;
         }
 
         .schema-type {
             font-family: var(--mono);
-            font-size: 0.65rem;
-            padding: 0.15rem 0.4rem;
+            font-size: 0.6rem;
+            padding: 0.12rem 0.38rem;
             border-radius: 3px;
             flex-shrink: 0;
+            font-weight: 600;
+            letter-spacing: 0.04em;
         }
 
-        .type-num { background: rgba(74,240,196,0.12); color: var(--accent); }
-        .type-str { background: rgba(255,107,157,0.12); color: var(--accent3); }
-        .type-bool { background: rgba(124,139,255,0.12); color: var(--accent2); }
-        .type-date { background: rgba(255,180,74,0.12); color: #ffb44a; }
+        .type-num { background: rgba(0,229,160,0.1); color: var(--accent); }
+        .type-str { background: rgba(255,95,143,0.1); color: var(--accent3); }
+        .type-bool { background: rgba(95,127,255,0.1); color: var(--accent2); }
+        .type-date { background: rgba(255,179,71,0.1); color: var(--accent4); }
         .type-other { background: var(--surface3); color: var(--text-dim); }
 
-        /* ── MAIN ───────────────────────────────────────── */
-        #main {
-            flex: 1;
+        .privacy-badge {
+            margin: 0 1rem 1rem;
             display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.68rem;
+            color: var(--text-dim);
+            font-family: var(--mono);
         }
 
-        /* ── TOP BAR ────────────────────────────────────── */
+        .privacy-dot {
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse 2.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+        /* ── MAIN ── */
+        #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+        /* TOPBAR */
         #topbar {
-            padding: 1.25rem 2rem;
+            padding: 1rem 1.75rem;
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
@@ -250,23 +273,24 @@
 
         #filename-display {
             font-family: var(--mono);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--text-bright);
             font-weight: 500;
-        }
-
-        #filename-display span {
-            color: var(--text-dim);
-            font-weight: 400;
-        }
-
-        .topbar-right {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.5rem;
         }
 
-        /* ── METRICS ────────────────────────────────────── */
+        #filename-display .file-chip {
+            background: var(--accent-dim);
+            border: 1px solid rgba(0,229,160,0.2);
+            color: var(--accent);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+        }
+
+        /* METRICS */
         #metricsBar {
             display: flex;
             gap: 0;
@@ -277,21 +301,39 @@
 
         .metric {
             flex: 1;
-            padding: 0.875rem 1.5rem;
+            padding: 0.85rem 1.5rem;
             border-right: 1px solid var(--border);
-            transition: background 0.15s;
+            position: relative;
+            overflow: hidden;
+            transition: background 0.2s;
+            cursor: default;
         }
 
         .metric:last-child { border-right: none; }
         .metric:hover { background: var(--surface2); }
 
+        .metric::before {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 2px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .metric:nth-child(1)::before { background: var(--accent); }
+        .metric:nth-child(2)::before { background: var(--accent2); }
+        .metric:nth-child(3)::before { background: var(--accent4); }
+        .metric:nth-child(4)::before { background: var(--accent3); }
+        .metric:hover::before { opacity: 1; }
+
         .metric-label {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.12em;
             color: var(--text-dim);
-            margin-bottom: 0.3rem;
-            font-weight: 600;
+            margin-bottom: 0.35rem;
+            font-weight: 700;
         }
 
         .metric-value {
@@ -299,112 +341,79 @@
             font-size: 1.4rem;
             font-weight: 600;
             color: var(--text-bright);
+            line-height: 1;
         }
 
-        .metric-value .unit {
-            font-size: 0.75rem;
-            color: var(--text-dim);
-            font-weight: 400;
-            margin-left: 0.25rem;
-        }
+        .metric-value .unit { font-size: 0.7rem; color: var(--text-dim); font-weight: 400; margin-left: 0.2rem; }
 
-        /* ── TOOLBAR ────────────────────────────────────── */
+        /* TOOLBAR */
         #toolbar {
-            padding: 0.75rem 1.5rem;
+            padding: 0.7rem 1.5rem;
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.65rem;
             flex-shrink: 0;
             background: var(--surface);
         }
 
         #searchInput {
             flex: 1;
-            max-width: 360px;
+            max-width: 340px;
             background: var(--surface2);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 0.45rem 0.75rem 0.45rem 2rem;
+            padding: 0.42rem 0.75rem 0.42rem 2rem;
             font-family: var(--mono);
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--text);
             outline: none;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
         }
 
         #searchInput::placeholder { color: var(--text-dim); }
-        #searchInput:focus { border-color: var(--accent); }
+        #searchInput:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
 
-        .search-wrap {
-            position: relative;
-            flex: 1;
-            max-width: 360px;
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 0.6rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-dim);
-            font-size: 0.8rem;
-            pointer-events: none;
-        }
+        .search-wrap { position: relative; flex: 1; max-width: 340px; }
+        .search-icon { position: absolute; left: 0.65rem; top: 50%; transform: translateY(-50%); color: var(--text-dim); font-size: 0.78rem; pointer-events: none; }
 
         .pill-btn {
             background: var(--surface2);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 0.45rem 0.875rem;
+            padding: 0.42rem 0.875rem;
             font-family: var(--mono);
-            font-size: 0.75rem;
+            font-size: 0.73rem;
             color: var(--text-dim);
             cursor: pointer;
             transition: all 0.15s;
             white-space: nowrap;
+            font-weight: 500;
         }
 
         .pill-btn:hover { border-color: var(--accent2); color: var(--accent2); background: var(--accent2-dim); }
 
-        #rowCount {
-            margin-left: auto;
-            font-family: var(--mono);
-            font-size: 0.75rem;
-            color: var(--text-dim);
-            white-space: nowrap;
-        }
+        #rowCount { margin-left: auto; font-family: var(--mono); font-size: 0.73rem; color: var(--text-dim); white-space: nowrap; }
 
-        /* ── TABLE ──────────────────────────────────────── */
-        #tableWrap {
-            flex: 1;
-            overflow: auto;
-            background: var(--bg);
-        }
-
+        /* TABLE */
+        #tableWrap { flex: 1; overflow: auto; background: var(--bg); }
         #tableWrap::-webkit-scrollbar { width: 8px; height: 8px; }
         #tableWrap::-webkit-scrollbar-track { background: var(--surface); }
         #tableWrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
         #tableWrap::-webkit-scrollbar-thumb:hover { background: var(--border-bright); }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.8rem;
-        }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
 
         thead tr {
             background: var(--surface);
-            position: sticky;
-            top: 0;
-            z-index: 10;
+            position: sticky; top: 0; z-index: 10;
         }
 
         th {
-            padding: 0.6rem 1rem;
+            padding: 0.6rem 0.85rem;
             text-align: left;
             font-family: var(--mono);
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             font-weight: 500;
             color: var(--text-dim);
             border-bottom: 1px solid var(--border);
@@ -412,225 +421,617 @@
             white-space: nowrap;
             cursor: pointer;
             user-select: none;
-            transition: color 0.15s, background 0.15s;
+            transition: all 0.15s;
+            position: relative;
         }
 
         th:hover { color: var(--text-bright); background: var(--surface2); }
-
-        th .th-inner {
-            display: flex;
-            align-items: center;
-            gap: 0.35rem;
-        }
-
-        th .sort-indicator {
-            font-size: 0.6rem;
-            opacity: 0.4;
-        }
-
         th.sorted { color: var(--accent); }
-        th.sorted .sort-indicator { opacity: 1; color: var(--accent); }
 
-        th:first-child {
-            width: 50px;
-            text-align: center;
-            color: var(--text-dim);
-            font-size: 0.65rem;
-            cursor: default;
+        th:first-child { width: 44px; text-align: center; cursor: default; font-size: 0.62rem; }
+        th:first-child:hover { color: var(--text-dim); background: var(--surface); }
+
+        .th-inner { display: flex; align-items: center; gap: 0.3rem; }
+        .th-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .th-type-dot {
+            width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0;
         }
+        .sort-indicator { font-size: 0.58rem; opacity: 0.35; flex-shrink: 0; }
+        th.sorted .sort-indicator { opacity: 1; }
 
-        th:first-child:hover { color: var(--text-dim); background: var(--surface); cursor: default; }
+        .th-stats-hint {
+            font-size: 0.55rem;
+            opacity: 0;
+            color: var(--accent2);
+            transition: opacity 0.15s;
+            margin-left: 2px;
+            font-family: var(--sans);
+        }
+        th:hover .th-stats-hint { opacity: 1; }
 
+        /* TABLE ROWS */
         td {
-            padding: 0.55rem 1rem;
-            border-bottom: 1px solid rgba(42,47,66,0.6);
-            border-right: 1px solid rgba(42,47,66,0.3);
+            padding: 0.5rem 0.85rem;
+            border-bottom: 1px solid rgba(31,36,54,0.7);
+            border-right: 1px solid rgba(31,36,54,0.4);
             font-family: var(--mono);
-            font-size: 0.78rem;
+            font-size: 0.76rem;
             color: var(--text);
             white-space: nowrap;
-            max-width: 280px;
+            max-width: 260px;
             overflow: hidden;
             text-overflow: ellipsis;
-            transition: background 0.1s;
+            transition: background 0.08s;
+            cursor: pointer;
+            position: relative;
         }
 
         td:first-child {
-            text-align: center;
-            color: var(--text-dim);
-            font-size: 0.7rem;
-            background: var(--surface);
-            width: 50px;
+            text-align: center; color: var(--text-dim); font-size: 0.68rem;
+            background: var(--surface); cursor: default; width: 44px;
         }
 
-        tbody tr:hover td { background: var(--row-hover); }
+        tbody tr { transition: background 0.08s; }
+        tbody tr:hover td { background: rgba(0,229,160,0.03); }
         tbody tr:hover td:first-child { background: var(--surface2); }
 
-        .null-val { color: var(--text-dim); font-style: italic; }
+        td:not(:first-child):hover {
+            background: rgba(95,127,255,0.08) !important;
+            color: var(--text-bright);
+        }
+
+        .null-val { color: var(--text-dim); opacity: 0.5; font-style: italic; }
         .num-val { color: var(--accent); }
         .bool-true { color: var(--accent); }
         .bool-false { color: var(--accent3); }
+        .date-val { color: var(--accent4); }
 
-        /* ── PAGINATION ─────────────────────────────────── */
+        /* PAGINATION */
         #pagination {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
+            display: flex; align-items: center; gap: 0.4rem;
+            padding: 0.65rem 1.5rem;
             border-top: 1px solid var(--border);
             flex-shrink: 0;
             background: var(--surface);
-            font-size: 0.8rem;
         }
 
         .page-btn {
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 0.3rem 0.7rem;
-            color: var(--text-dim);
-            cursor: pointer;
-            font-family: var(--mono);
-            font-size: 0.75rem;
-            transition: all 0.15s;
+            background: var(--surface2); border: 1px solid var(--border); border-radius: 5px;
+            padding: 0.28rem 0.65rem; color: var(--text-dim); cursor: pointer;
+            font-family: var(--mono); font-size: 0.72rem; transition: all 0.12s;
         }
 
-        .page-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
-        .page-btn:disabled { opacity: 0.35; cursor: default; }
-        .page-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+        .page-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+        .page-btn:disabled { opacity: 0.3; cursor: default; }
+        .page-btn.active { background: var(--accent-dim); border-color: rgba(0,229,160,0.4); color: var(--accent); font-weight: 600; }
 
-        #pageInfo {
-            font-family: var(--mono);
-            font-size: 0.75rem;
-            color: var(--text-dim);
-            margin: 0 0.5rem;
-        }
+        #pageInfo { font-family: var(--mono); font-size: 0.72rem; color: var(--text-dim); margin: 0 0.4rem; }
 
         .page-size-select {
             margin-left: auto;
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 0.3rem 0.5rem;
-            color: var(--text-dim);
-            font-family: var(--mono);
-            font-size: 0.75rem;
-            cursor: pointer;
-            outline: none;
+            background: var(--surface2); border: 1px solid var(--border); border-radius: 5px;
+            padding: 0.28rem 0.5rem; color: var(--text-dim);
+            font-family: var(--mono); font-size: 0.72rem; cursor: pointer; outline: none;
         }
 
-        /* ── EMPTY STATE ────────────────────────────────── */
+        /* EMPTY STATE */
         #emptyState {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            flex: 1;
-            gap: 1rem;
-            color: var(--text-dim);
-            padding: 3rem;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            flex: 1; gap: 1.25rem; color: var(--text-dim); padding: 3rem;
         }
 
-        .empty-icon {
-            font-size: 3rem;
-            opacity: 0.3;
-        }
+        .empty-icon { font-size: 2.5rem; opacity: 0.2; }
+        .empty-title { font-size: 1.05rem; color: var(--text); font-weight: 600; }
+        .empty-sub { font-size: 0.82rem; color: var(--text-dim); text-align: center; max-width: 280px; line-height: 1.7; font-family: var(--mono); }
 
-        .empty-title {
-            font-size: 1.1rem;
-            color: var(--text);
-            font-weight: 500;
-        }
-
-        .empty-sub {
-            font-size: 0.85rem;
-            color: var(--text-dim);
-            text-align: center;
-            max-width: 320px;
-            line-height: 1.6;
-            font-family: var(--mono);
-        }
-
-        /* ── LOADING ────────────────────────────────────── */
+        /* LOADING */
         #loadingOverlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(13,15,20,0.85);
-            z-index: 100;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: 1rem;
+            display: none; position: fixed; inset: 0;
+            background: rgba(8,10,15,0.88); z-index: 200;
+            align-items: center; justify-content: center; flex-direction: column; gap: 1rem;
+            backdrop-filter: blur(4px);
         }
-
         #loadingOverlay.show { display: flex; }
 
         .spinner {
-            width: 40px;
-            height: 40px;
-            border: 2px solid var(--border);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
+            width: 36px; height: 36px;
+            border: 2px solid var(--border); border-top-color: var(--accent);
+            border-radius: 50%; animation: spin 0.65s linear infinite;
         }
-
         @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { font-family: var(--mono); font-size: 0.82rem; color: var(--text-dim); }
 
-        .loading-text {
-            font-family: var(--mono);
-            font-size: 0.85rem;
-            color: var(--text-dim);
+        /* ═══════════════════════════════════════════════════
+           COLUMN STATS MODAL
+        ═══════════════════════════════════════════════════ */
+        .modal-backdrop {
+            display: none; position: fixed; inset: 0;
+            background: rgba(8,10,15,0.75);
+            z-index: 150;
+            align-items: center; justify-content: center;
+            backdrop-filter: blur(6px);
+            animation: backdropIn 0.2s ease;
+        }
+        .modal-backdrop.show { display: flex; }
+
+        @keyframes backdropIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border-bright);
+            border-radius: var(--radius-lg);
+            width: 540px;
+            max-width: 90vw;
+            max-height: 82vh;
+            overflow: hidden;
+            display: flex; flex-direction: column;
+            animation: modalIn 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 0 0 1px rgba(0,229,160,0.06), 0 32px 80px rgba(0,0,0,0.6), 0 0 40px rgba(0,229,160,0.04);
+            position: relative;
         }
 
-        /* ── HIDDEN ─────────────────────────────────────── */
-        .hidden { display: none !important; }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.93) translateY(8px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
 
-        /* ── PRIVACY BADGE ──────────────────────────────── */
-        .privacy-badge {
-            margin: 0 1.25rem 1rem;
+        .modal-glow {
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 60%; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0.6;
+        }
+
+        .modal-header {
+            padding: 1.25rem 1.5rem 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+        }
+
+        .modal-col-name {
+            font-family: var(--mono);
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-bright);
+        }
+
+        .modal-col-type {
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            margin-top: 0.2rem;
+            display: inline-block;
+        }
+
+        .modal-close {
+            background: var(--surface2); border: 1px solid var(--border); border-radius: 5px;
+            width: 28px; height: 28px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--text-dim); font-size: 0.85rem;
+            transition: all 0.15s; flex-shrink: 0;
+        }
+        .modal-close:hover { border-color: var(--accent3); color: var(--accent3); }
+
+        .modal-body { padding: 1.25rem 1.5rem; overflow-y: auto; flex: 1; }
+        .modal-body::-webkit-scrollbar { width: 4px; }
+        .modal-body::-webkit-scrollbar-track { background: transparent; }
+        .modal-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.65rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .stat-card {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.7rem 0.9rem;
+            transition: border-color 0.15s;
+        }
+
+        .stat-card:hover { border-color: var(--border-bright); }
+        .stat-card.accent { border-color: rgba(0,229,160,0.2); background: var(--accent-dim); }
+        .stat-card.accent2 { border-color: rgba(95,127,255,0.2); background: var(--accent2-dim); }
+
+        .stat-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+            margin-bottom: 0.3rem;
+            font-weight: 700;
+        }
+
+        .stat-value {
+            font-family: var(--mono);
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text-bright);
+        }
+
+        .stat-value.accent { color: var(--accent); }
+        .stat-value.accent2 { color: var(--accent2); }
+        .stat-value small { font-size: 0.65rem; color: var(--text-dim); font-weight: 400; }
+
+        /* NULL bar */
+        .null-bar-wrap { margin-bottom: 1.25rem; }
+        .null-bar-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 0.5rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+        .null-bar-track { background: var(--surface3); border-radius: 4px; height: 6px; overflow: hidden; position: relative; }
+        .null-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 4px; transition: width 0.6s cubic-bezier(0.34, 1.2, 0.64, 1); }
+        .null-bar-fill.has-nulls { background: linear-gradient(90deg, var(--accent), var(--accent3)); }
+
+        /* Value freq */
+        .section-title {
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+            margin-bottom: 0.6rem;
+            font-weight: 700;
+        }
+
+        .freq-item {
             display: flex;
             align-items: center;
-            gap: 0.4rem;
-            font-size: 0.7rem;
-            color: var(--text-dim);
+            gap: 0.7rem;
+            margin-bottom: 0.45rem;
+            cursor: default;
+        }
+
+        .freq-label {
             font-family: var(--mono);
+            font-size: 0.73rem;
+            color: var(--text);
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
         }
 
-        .privacy-dot {
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background: var(--accent);
-            animation: pulse 2s ease-in-out infinite;
+        .freq-bar-wrap { flex: 2; position: relative; min-width: 0; }
+        .freq-bar-track { background: var(--surface3); border-radius: 3px; height: 5px; overflow: hidden; }
+        .freq-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+
+        .freq-count {
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            width: 42px;
+            text-align: right;
+            flex-shrink: 0;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+        /* Num stats extras */
+        .num-stat-row {
+            display: flex; gap: 0.5rem; margin-bottom: 1.25rem;
         }
 
-        /* ── ANIMATIONS ─────────────────────────────────── */
-        #dashboard {
-            display: contents;
+        .num-mini-card {
+            flex: 1;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.5rem 0.6rem;
+            text-align: center;
         }
 
-        tbody tr {
-            animation: fadeRow 0.15s ease forwards;
+        .num-mini-label {
+            font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--text-dim); margin-bottom: 0.2rem; font-weight: 700;
         }
 
-        @keyframes fadeRow {
-            from { opacity: 0; transform: translateY(2px); }
-            to { opacity: 1; transform: translateY(0); }
+        .num-mini-value {
+            font-family: var(--mono); font-size: 0.78rem;
+            color: var(--text-bright); font-weight: 500;
         }
+
+        /* Mini histogram */
+        .histogram { display: flex; align-items: flex-end; gap: 2px; height: 48px; margin-bottom: 1.25rem; }
+        .hist-bar {
+            flex: 1;
+            background: linear-gradient(180deg, var(--accent2) 0%, var(--accent) 100%);
+            border-radius: 2px 2px 0 0;
+            min-height: 2px;
+            transition: opacity 0.15s;
+            opacity: 0.6;
+        }
+        .hist-bar:hover { opacity: 1; }
+
+        /* ═══════════════════════════════════════════════════
+           CELL VALUE MODAL
+        ═══════════════════════════════════════════════════ */
+        .cell-modal {
+            width: 640px;
+            max-width: 94vw;
+            max-height: 86vh;
+        }
+
+        .cell-modal .modal-header { padding: 1rem 1.25rem 0.875rem; }
+
+        .cell-col-header {
+            font-size: 0.68rem;
+            font-family: var(--mono);
+            color: var(--text-dim);
+            margin-bottom: 0.15rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        /* view toggle tabs */
+        .cm-tabs {
+            display: flex; gap: 0; margin-bottom: 1rem;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            padding: 3px;
+        }
+        .cm-tab {
+            flex: 1; padding: 0.3rem 0.6rem; border-radius: 5px;
+            font-family: var(--mono); font-size: 0.7rem; font-weight: 500;
+            color: var(--text-dim); cursor: pointer; transition: all 0.15s;
+            text-align: center; border: none; background: none;
+        }
+        .cm-tab.active { background: var(--surface3); color: var(--text-bright); }
+        .cm-tab:hover:not(.active) { color: var(--text); }
+
+        /* Raw view */
+        .cell-value-raw {
+            font-family: var(--mono); font-size: 0.78rem; color: var(--text-bright);
+            white-space: pre-wrap; word-break: break-all; line-height: 1.65;
+            background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 7px; padding: 0.85rem 1rem;
+            max-height: 360px; overflow-y: auto;
+        }
+        .cell-value-raw::-webkit-scrollbar { width: 4px; }
+        .cell-value-raw::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        /* Smart renderer container */
+        .cell-value-smart {
+            max-height: 380px; overflow-y: auto; padding-right: 2px;
+        }
+        .cell-value-smart::-webkit-scrollbar { width: 4px; }
+        .cell-value-smart::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        /* ── KV rows ── */
+        .sv-kv {
+            display: flex; align-items: flex-start; gap: 0;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.1s;
+        }
+        .sv-kv:last-child { border-bottom: none; }
+        .sv-kv:hover { background: var(--surface3); }
+        .sv-key {
+            font-family: var(--mono); font-size: 0.72rem; font-weight: 500;
+            color: var(--accent2); padding: 0.5rem 0.75rem 0.5rem 0;
+            min-width: 150px; max-width: 150px; overflow: hidden; text-overflow: ellipsis;
+            white-space: nowrap; flex-shrink: 0; opacity: 0.85;
+        }
+        .sv-val {
+            font-family: var(--mono); font-size: 0.78rem; color: var(--text-bright);
+            padding: 0.5rem 0; flex: 1; min-width: 0; word-break: break-word;
+        }
+
+        /* ── Primitives ── */
+        .sv-null { color: var(--text-dim); font-style: italic; opacity: 0.6; }
+        .sv-num { color: var(--accent); }
+        .sv-bool-true { color: var(--accent); }
+        .sv-bool-false { color: var(--accent3); }
+        .sv-date { color: var(--accent4); }
+        .sv-url { color: var(--accent2); text-decoration: underline; cursor: pointer; }
+        .sv-long-str { color: var(--text); line-height: 1.55; }
+
+        /* ── Risk / status badges ── */
+        .sv-badge {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            padding: 0.18rem 0.55rem; border-radius: 20px;
+            font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+        }
+        .sv-badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+        .badge-high { background: rgba(255,95,143,0.12); color: var(--accent3); border: 1px solid rgba(255,95,143,0.25); }
+        .badge-medium, .badge-moderate { background: rgba(255,179,71,0.12); color: var(--accent4); border: 1px solid rgba(255,179,71,0.25); }
+        .badge-low { background: rgba(0,229,160,0.1); color: var(--accent); border: 1px solid rgba(0,229,160,0.2); }
+        .badge-passed, .badge-success, .badge-ok, .badge-true { background: rgba(0,229,160,0.1); color: var(--accent); border: 1px solid rgba(0,229,160,0.2); }
+        .badge-failed, .badge-error, .badge-false { background: rgba(255,95,143,0.12); color: var(--accent3); border: 1px solid rgba(255,95,143,0.25); }
+        .badge-pending, .badge-running, .badge-warning { background: rgba(255,179,71,0.12); color: var(--accent4); border: 1px solid rgba(255,179,71,0.25); }
+        .badge-info, .badge-unknown { background: rgba(95,127,255,0.1); color: var(--accent2); border: 1px solid rgba(95,127,255,0.2); }
+
+        /* ── Confidence / progress ── */
+        .sv-progress-wrap { display: flex; align-items: center; gap: 0.6rem; }
+        .sv-progress-track { flex: 1; height: 5px; background: var(--surface3); border-radius: 3px; overflow: hidden; min-width: 80px; }
+        .sv-progress-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+        .sv-progress-label { font-family: var(--mono); font-size: 0.72rem; color: var(--text-bright); flex-shrink: 0; }
+
+        /* ── String list (array of strings) ── */
+        .sv-strlist { display: flex; flex-direction: column; gap: 0.35rem; padding: 0.1rem 0; }
+        .sv-strlist-item {
+            display: flex; align-items: flex-start; gap: 0.6rem;
+            padding: 0.45rem 0.65rem;
+            background: var(--surface2); border-left: 2px solid var(--accent2);
+            border-radius: 0 5px 5px 0; font-size: 0.76rem; line-height: 1.55;
+            color: var(--text); word-break: break-word;
+        }
+        .sv-strlist-idx {
+            font-family: var(--mono); font-size: 0.62rem; color: var(--accent2);
+            opacity: 0.7; padding-top: 0.1rem; flex-shrink: 0; min-width: 14px;
+        }
+
+        /* ── Object array table ── */
+        .sv-obj-table { width: 100%; border-collapse: collapse; font-size: 0.72rem; }
+        .sv-obj-table th {
+            font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em;
+            color: var(--text-dim); padding: 0.35rem 0.6rem; background: var(--surface2);
+            border: 1px solid var(--border); text-align: left; white-space: nowrap; font-weight: 700;
+        }
+        .sv-obj-table td {
+            font-family: var(--mono); font-size: 0.72rem; color: var(--text);
+            padding: 0.35rem 0.6rem; border: 1px solid var(--border);
+            max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            cursor: default;
+            /* override global td styles */
+            background: none !important; outline: none !important;
+        }
+        .sv-obj-table tr:nth-child(even) td { background: var(--surface2) !important; }
+        .sv-obj-table-wrap { border-radius: 6px; overflow: hidden; border: 1px solid var(--border); }
+
+        /* ── Timeline (array of {at, status}) ── */
+        .sv-timeline { display: flex; flex-direction: column; gap: 0; }
+        .sv-tl-item {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.4rem 0.65rem; border-bottom: 1px solid var(--border);
+            transition: background 0.1s; position: relative;
+        }
+        .sv-tl-item:last-child { border-bottom: none; }
+        .sv-tl-item:hover { background: var(--surface2); }
+        .sv-tl-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            flex-shrink: 0; position: relative;
+        }
+        .sv-tl-dot::after {
+            content: ''; position: absolute; left: 3px; top: 8px;
+            width: 2px; height: calc(100% + 8px);
+            background: var(--border);
+        }
+        .sv-tl-item:last-child .sv-tl-dot::after { display: none; }
+        .sv-tl-time { font-family: var(--mono); font-size: 0.7rem; color: var(--text-dim); flex: 1; }
+        .sv-tl-status { flex-shrink: 0; }
+
+        /* ── Collapsible section ── */
+        .sv-section { margin-bottom: 0.75rem; }
+        .sv-section-toggle {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-family: var(--mono); font-size: 0.68rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--text-dim); cursor: pointer; padding: 0.35rem 0;
+            border-bottom: 1px solid var(--border); margin-bottom: 0.5rem;
+            user-select: none; transition: color 0.15s;
+        }
+        .sv-section-toggle:hover { color: var(--text-bright); }
+        .sv-chevron { transition: transform 0.2s; font-style: normal; }
+        .sv-section.collapsed .sv-chevron { transform: rotate(-90deg); }
+        .sv-section.collapsed .sv-section-body { display: none; }
+
+        /* ── Nested object block ── */
+        .sv-nested {
+            background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 6px; padding: 0.2rem 0.75rem; margin-top: 0.25rem;
+        }
+
+        /* ── Scalar in full-width layout ── */
+        .sv-scalar-block {
+            padding: 0.85rem 1rem;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            font-family: var(--mono); font-size: 0.88rem;
+            line-height: 1.6; word-break: break-word;
+        }
+
+        /* ── Stat chips row ── */
+        .sv-stats-row {
+            display: flex; flex-wrap: wrap; gap: 0.4rem;
+            margin-bottom: 0.75rem; padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .sv-stat-chip {
+            background: var(--surface3); border: 1px solid var(--border);
+            border-radius: 4px; padding: 0.2rem 0.55rem;
+            font-family: var(--mono); font-size: 0.62rem; color: var(--text-dim);
+        }
+        .sv-stat-chip span { color: var(--text-bright); font-weight: 600; }
+
+        .cell-actions {
+            display: flex; gap: 0.5rem; margin-top: 0.9rem;
+        }
+
+        .action-btn {
+            flex: 1; background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 6px; padding: 0.45rem 0.75rem;
+            font-family: var(--mono); font-size: 0.72rem; color: var(--text-dim);
+            cursor: pointer; transition: all 0.15s;
+            display: flex; align-items: center; justify-content: center; gap: 0.35rem;
+        }
+
+        .action-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+        .action-btn.copied { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+
+        .cell-meta {
+            display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.6rem;
+        }
+
+        .cell-meta-chip {
+            font-family: var(--mono); font-size: 0.62rem;
+            padding: 0.15rem 0.5rem; border-radius: 3px;
+            background: var(--surface3); color: var(--text-dim);
+        }
+
+        /* ROW HIGHLIGHT */
+        tbody tr.highlighted td { background: rgba(95,127,255,0.04) !important; }
+        tbody tr.highlighted td:first-child { background: var(--surface2) !important; }
+
+        /* ANIMATE ROWS */
+        tbody tr { animation: fadeRow 0.12s ease forwards; }
+        @keyframes fadeRow { from { opacity: 0; } to { opacity: 1; } }
+
+        .hidden { display: none !important; }
+
+        /* COLUMN HIGHLIGHT */
+        td.col-highlight { background: rgba(95,127,255,0.05) !important; outline: 1px solid rgba(95,127,255,0.12); outline-offset: -1px; }
+        th.col-highlight-header { background: rgba(95,127,255,0.08) !important; color: var(--accent2) !important; }
     </style>
 </head>
 <body>
 
-<!-- Loading Overlay -->
 <div id="loadingOverlay">
     <div class="spinner"></div>
     <div class="loading-text">Parsing parquet file…</div>
+</div>
+
+<!-- COLUMN STATS MODAL -->
+<div class="modal-backdrop" id="colStatsBackdrop">
+    <div class="modal" id="colStatsModal">
+        <div class="modal-glow"></div>
+        <div class="modal-header">
+            <div>
+                <div class="modal-col-name" id="csColName">—</div>
+                <span class="modal-col-type" id="csColType">—</span>
+            </div>
+            <button class="modal-close" id="colStatsClose">✕</button>
+        </div>
+        <div class="modal-body" id="colStatsBody"></div>
+    </div>
+</div>
+
+<!-- CELL VALUE MODAL -->
+<div class="modal-backdrop" id="cellModalBackdrop">
+    <div class="modal cell-modal" id="cellModal">
+        <div class="modal-glow"></div>
+        <div class="modal-header">
+            <div>
+                <div class="cell-col-header" id="cmColName">—</div>
+                <div style="font-family:var(--mono);font-size:0.72rem;color:var(--text-dim)" id="cmRowNum">Row —</div>
+            </div>
+            <button class="modal-close" id="cellModalClose">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="cm-tabs" id="cmTabs" style="display:none">
+                <button class="cm-tab active" data-view="smart">⬡ Formatted</button>
+                <button class="cm-tab" data-view="raw">{ } Raw JSON</button>
+            </div>
+            <div id="cmSmartView"></div>
+            <div id="cmRawView" style="display:none"><div class="cell-value-raw" id="cmRawText"></div></div>
+            <div class="cell-meta" id="cmMeta"></div>
+            <div class="cell-actions">
+                <button class="action-btn" id="cmCopyBtn">⎘ Copy value</button>
+                <button class="action-btn" id="cmColStatsBtn">▦ Column stats</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- SIDEBAR -->
@@ -640,14 +1041,14 @@
             <div class="logo-icon">⬡</div>
             <span class="logo-text">pq.explorer</span>
         </div>
-        <div class="logo-sub"> User End Secure Parquet Explorer</div>
+        <div class="logo-sub">Secure • Client-side</div>
     </div>
 
     <label id="dropzone">
-        <span class="dropzone-icon">📁</span>
+        <span class="dropzone-icon">📂</span>
         <div class="dropzone-label">
             <strong>Click to upload</strong> or drag & drop<br>
-            <span style="font-size:0.7rem;">.parquet files · processed locally</span>
+            <span style="font-size:0.68rem;">.parquet · processed locally</span>
         </div>
         <input type="file" id="fileInput" accept=".parquet,.parquet.snappy,.parquet.gz">
     </label>
@@ -659,7 +1060,10 @@
         100% client-side · no uploads
     </div>
 
-    <div class="schema-title" id="schemaTitle" style="display:none">Schema</div>
+    <div class="schema-section-header" id="schemaTitle" style="display:none">
+        <span>Schema</span>
+        <span class="schema-count" id="schemaCnt">0</span>
+    </div>
     <div id="schemaList"></div>
 </div>
 
@@ -672,7 +1076,7 @@
         <div class="empty-sub">Upload a .parquet file from the sidebar to explore your data right here in the browser.</div>
     </div>
 
-    <!-- Dashboard (hidden until file loaded) -->
+    <!-- Dashboard -->
     <div id="dashboard" style="display:none; flex-direction:column; flex:1; overflow:hidden;">
         <div id="topbar">
             <div id="filename-display">—</div>
@@ -692,7 +1096,7 @@
                 <div class="metric-value" id="valSize">—</div>
             </div>
             <div class="metric">
-                <div class="metric-label">Showing</div>
+                <div class="metric-label">Filtered</div>
                 <div class="metric-value" id="valShowing">—</div>
             </div>
         </div>
@@ -703,7 +1107,7 @@
                 <input type="text" id="searchInput" placeholder="Filter rows…">
             </div>
             <button class="pill-btn" id="clearSort">↺ Reset sort</button>
-            <div id="rowCount" style="margin-left:auto; font-family:var(--mono); font-size:0.75rem; color:var(--text-dim);"></div>
+            <div id="rowCount"></div>
         </div>
 
         <div id="tableWrap">
@@ -718,52 +1122,31 @@
 </div>
 
 <script>
-(function() {
+(function () {
     const PAGE_SIZES = [25, 50, 100, 250];
+    let allRows = [], filteredRows = [], headers = [], colTypes = [];
+    let sortCol = null, sortDir = 1, currentPage = 0, pageSize = 50, searchTerm = '';
+    let activeColIndex = null; // for cell modal "column stats" button
 
-    let allRows = [];
-    let filteredRows = [];
-    let headers = [];
-    let colTypes = [];
-    let sortCol = null;
-    let sortDir = 1;
-    let currentPage = 0;
-    let pageSize = 50;
-    let searchTerm = '';
+    const $ = id => document.getElementById(id);
+    const fileInput = $('fileInput'), dropzone = $('dropzone'), fileStatus = $('fileStatus');
+    const schemaList = $('schemaList'), schemaTitle = $('schemaTitle');
+    const emptyState = $('emptyState'), dashboard = $('dashboard'), loadingOverlay = $('loadingOverlay');
 
-    // ── Elements ────────────────────────────────────────
-    const fileInput   = document.getElementById('fileInput');
-    const dropzone    = document.getElementById('dropzone');
-    const fileStatus  = document.getElementById('fileStatus');
-    const schemaList  = document.getElementById('schemaList');
-    const schemaTitle = document.getElementById('schemaTitle');
-    const emptyState  = document.getElementById('emptyState');
-    const dashboard   = document.getElementById('dashboard');
-    const loadingOverlay = document.getElementById('loadingOverlay');
-
-    // ── Drag and drop ───────────────────────────────────
+    // ── Drag & drop ──────────────────────────────────────
     dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
     dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
-    dropzone.addEventListener('drop', e => {
-        e.preventDefault();
-        dropzone.classList.remove('dragover');
-        const file = e.dataTransfer.files[0];
-        if (file) processFile(file);
-    });
+    dropzone.addEventListener('drop', e => { e.preventDefault(); dropzone.classList.remove('dragover'); const f = e.dataTransfer.files[0]; if (f) processFile(f); });
+    fileInput.addEventListener('change', e => { if (e.target.files[0]) processFile(e.target.files[0]); });
 
-    fileInput.addEventListener('change', e => {
-        if (e.target.files[0]) processFile(e.target.files[0]);
-    });
-
-    // ── File Processing ─────────────────────────────────
+    // ── File processing ──────────────────────────────────
     async function processFile(file) {
         loadingOverlay.classList.add('show');
         setStatus('loading', `Loading: ${file.name}`);
-
         try {
-            const arrayBuffer = await file.arrayBuffer();
-            await parseParquet(arrayBuffer, file);
-        } catch(err) {
+            const buf = await file.arrayBuffer();
+            await parseParquet(buf, file);
+        } catch (err) {
             console.error(err);
             setStatus('error', `Error: ${err.message}`);
             loadingOverlay.classList.remove('show');
@@ -771,74 +1154,38 @@
     }
 
     async function parseParquet(arrayBuffer, file) {
-        // Wait for the ES module to finish loading if it hasn't yet
         if (!window.__hyparquetReady) {
             await new Promise((resolve, reject) => {
-                const timeout = setTimeout(() => reject(new Error(
-                    'hyparquet failed to load. Make sure esm.sh is reachable (requires internet on first load to fetch the library; after that it is cached).'
-                )), 15000);
-                document.addEventListener('hyparquet:ready', () => { clearTimeout(timeout); resolve(); }, { once: true });
+                const t = setTimeout(() => reject(new Error('hyparquet failed to load.')), 15000);
+                document.addEventListener('hyparquet:ready', () => { clearTimeout(t); resolve(); }, { once: true });
             });
         }
-
-        const parquetRead = window.__parquetRead;
-
-        // Wrap the ArrayBuffer as an AsyncBuffer (hyparquet 1.x API)
-        const asyncBuf = {
-            byteLength: arrayBuffer.byteLength,
-            slice: (start, end) => Promise.resolve(arrayBuffer.slice(start, end))
-        };
-
+        const asyncBuf = { byteLength: arrayBuffer.byteLength, slice: (s, e) => Promise.resolve(arrayBuffer.slice(s, e)) };
         return new Promise((resolve, reject) => {
-            parquetRead({
-                file: asyncBuf,
-                rowFormat: 'object', 
-                onComplete: (data) => {
-                    try { renderAll(data, file); resolve(); }
-                    catch(e) { reject(e); }
-                }
-            }).catch(reject);
+            window.__parquetRead({ file: asyncBuf, rowFormat: 'object', onComplete: (data) => {
+                try { renderAll(data, file); resolve(); } catch (e) { reject(e); }
+            }}).catch(reject);
         });
     }
 
-    // ── Render ──────────────────────────────────────────
+    // ── Render all ───────────────────────────────────────
     function renderAll(rows, file) {
-        if (!rows || rows.length === 0) {
-            setStatus('error', 'File is empty or unreadable.');
-            loadingOverlay.classList.remove('show');
-            return;
-        }
-
+        if (!rows || rows.length === 0) { setStatus('error', 'File is empty.'); loadingOverlay.classList.remove('show'); return; }
         allRows = rows;
         headers = Object.keys(rows[0]);
         colTypes = detectTypes(rows, headers);
-        sortCol = null; sortDir = 1;
-        searchTerm = ''; currentPage = 0;
-        document.getElementById('searchInput').value = '';
-
-        // File info
+        sortCol = null; sortDir = 1; searchTerm = ''; currentPage = 0;
+        $('searchInput').value = '';
         setStatus('active', file.name);
-        document.getElementById('filename-display').textContent = file.name;
-
-        // Metrics
-        const sizeFmt = formatSize(file.size);
-        document.getElementById('valRows').innerHTML = rows.length.toLocaleString();
-        document.getElementById('valCols').innerHTML = headers.length;
-        document.getElementById('valSize').innerHTML = `${sizeFmt.val}<span class="unit">${sizeFmt.unit}</span>`;
-
-        // Schema
+        $('filename-display').innerHTML = `<span class="file-chip">.parquet</span> ${file.name}`;
+        const sz = formatSize(file.size);
+        $('valRows').innerHTML = rows.length.toLocaleString();
+        $('valCols').innerHTML = headers.length;
+        $('valSize').innerHTML = `${sz.val}<span class="unit">${sz.unit}</span>`;
         renderSchema();
-
-        // Table + pagination
         applyFiltersAndSort();
-
-        // Show dashboard
         emptyState.style.display = 'none';
-        dashboard.style.display = 'flex';
-        dashboard.style.flexDirection = 'column';
-        dashboard.style.flex = '1';
-        dashboard.style.overflow = 'hidden';
-
+        Object.assign(dashboard.style, { display:'flex', flexDirection:'column', flex:'1', overflow:'hidden' });
         loadingOverlay.classList.remove('show');
     }
 
@@ -857,39 +1204,32 @@
         });
     }
 
-    function renderSchema() {
-        schemaTitle.style.display = 'block';
-        const TYPE_COLOR = { num: 'type-num', str: 'type-str', bool: 'type-bool', date: 'type-date', other: 'type-other' };
-        const TYPE_DOT = { num: 'var(--accent)', str: 'var(--accent3)', bool: 'var(--accent2)', date: '#ffb44a', other: 'var(--text-dim)' };
-        const TYPE_LABEL = { num: 'NUM', str: 'STR', bool: 'BOOL', date: 'DATE', other: '???' };
+    const TYPE_DOT_COLOR = { num: 'var(--accent)', str: 'var(--accent3)', bool: 'var(--accent2)', date: 'var(--accent4)', other: 'var(--text-dim)' };
+    const TYPE_CLASS = { num: 'type-num', str: 'type-str', bool: 'type-bool', date: 'type-date', other: 'type-other' };
+    const TYPE_LABEL = { num: 'NUM', str: 'STR', bool: 'BOOL', date: 'DATE', other: '???' };
 
-        schemaList.innerHTML = headers.map((h, i) => {
-            const t = colTypes[i];
-            return `
-                <div class="schema-item">
-                    <div class="schema-dot" style="background:${TYPE_DOT[t]}"></div>
-                    <div class="schema-name" title="${h}">${h}</div>
-                    <div class="schema-type ${TYPE_COLOR[t]}">${TYPE_LABEL[t]}</div>
-                </div>`;
-        }).join('');
+    function renderSchema() {
+        schemaTitle.style.display = 'flex';
+        $('schemaCnt').textContent = headers.length;
+        schemaList.innerHTML = headers.map((h, i) => `
+            <div class="schema-item" data-col="${i}" title="Click to view column stats">
+                <div class="schema-dot" style="background:${TYPE_DOT_COLOR[colTypes[i]]}"></div>
+                <div class="schema-name">${h}</div>
+                <div class="schema-type ${TYPE_CLASS[colTypes[i]]}">${TYPE_LABEL[colTypes[i]]}</div>
+            </div>`).join('');
+
+        schemaList.querySelectorAll('.schema-item').forEach(el => {
+            el.addEventListener('click', () => openColStats(parseInt(el.dataset.col)));
+        });
     }
 
+    // ── Filter + Sort ────────────────────────────────────
     function applyFiltersAndSort() {
         let rows = allRows;
-
-        // Search filter
         if (searchTerm) {
-            const term = searchTerm.toLowerCase();
-            rows = rows.filter(row =>
-                headers.some(h => {
-                    const v = row[h];
-                    if (v === null || v === undefined) return false;
-                    return String(v).toLowerCase().includes(term);
-                })
-            );
+            const t = searchTerm.toLowerCase();
+            rows = rows.filter(row => headers.some(h => { const v = row[h]; return v !== null && v !== undefined && String(v).toLowerCase().includes(t); }));
         }
-
-        // Sort
         if (sortCol !== null) {
             rows = [...rows].sort((a, b) => {
                 let va = a[headers[sortCol]], vb = b[headers[sortCol]];
@@ -897,150 +1237,588 @@
                 if (vb === null || vb === undefined) return -1;
                 if (typeof va === 'bigint') va = Number(va);
                 if (typeof vb === 'bigint') vb = Number(vb);
-                if (va < vb) return -1 * sortDir;
-                if (va > vb) return 1 * sortDir;
-                return 0;
+                return (va < vb ? -1 : va > vb ? 1 : 0) * sortDir;
             });
         }
-
         filteredRows = rows;
         currentPage = 0;
         renderTable();
         renderPagination();
-
-        const showing = Math.min(pageSize, filteredRows.length);
-        document.getElementById('valShowing').innerHTML = `${showing.toLocaleString()}<span class="unit"> / pg</span>`;
-        document.getElementById('rowCount').textContent =
-            filteredRows.length !== allRows.length
-                ? `${filteredRows.length.toLocaleString()} of ${allRows.length.toLocaleString()} rows`
-                : `${allRows.length.toLocaleString()} rows`;
+        const showing = Math.min(filteredRows.length, allRows.length);
+        $('valShowing').innerHTML = `${filteredRows.length.toLocaleString()}<span class="unit"> rows</span>`;
+        $('rowCount').textContent = filteredRows.length !== allRows.length
+            ? `${filteredRows.length.toLocaleString()} of ${allRows.length.toLocaleString()} rows`
+            : `${allRows.length.toLocaleString()} rows`;
     }
 
     function renderTable() {
         const start = currentPage * pageSize;
         const slice = filteredRows.slice(start, start + pageSize);
 
-        // Header
-        document.getElementById('tHead').innerHTML = `<tr>
+        $('tHead').innerHTML = `<tr>
             <th>#</th>
             ${headers.map((h, i) => `
                 <th class="${sortCol === i ? 'sorted' : ''}" data-col="${i}">
                     <div class="th-inner">
-                        ${h}
+                        <div class="th-type-dot" style="background:${TYPE_DOT_COLOR[colTypes[i]]}"></div>
+                        <span class="th-name">${h}</span>
+                        <span class="th-stats-hint" title="View stats">▦</span>
                         <span class="sort-indicator">${sortCol === i ? (sortDir === 1 ? '↑' : '↓') : '↕'}</span>
                     </div>
                 </th>`).join('')}
         </tr>`;
 
-        // Bind sort
-        document.querySelectorAll('#tHead th[data-col]').forEach(th => {
-            th.addEventListener('click', () => {
+        $('tHead').querySelectorAll('th[data-col]').forEach(th => {
+            th.addEventListener('click', e => {
                 const col = parseInt(th.dataset.col);
+                // If clicking the stats hint icon
+                if (e.target.classList.contains('th-stats-hint')) {
+                    e.stopPropagation();
+                    openColStats(col);
+                    return;
+                }
+                // Sort on regular click
                 if (sortCol === col) sortDir *= -1;
                 else { sortCol = col; sortDir = 1; }
                 applyFiltersAndSort();
             });
+
+            // Right-click → col stats
+            th.addEventListener('contextmenu', e => {
+                e.preventDefault();
+                openColStats(parseInt(th.dataset.col));
+            });
         });
 
-        // Body
-        document.getElementById('tBody').innerHTML = slice.map((row, idx) => {
+        $('tBody').innerHTML = slice.map((row, idx) => {
             const rowNum = start + idx + 1;
-            return `<tr>
+            return `<tr data-row="${start + idx}">
                 <td>${rowNum}</td>
                 ${headers.map((h, ci) => {
-                    let v = row[h];
-                    let cls = '', display = '';
-                    if (v === null || v === undefined) {
-                        cls = 'null-val'; display = 'null';
-                    } else if (typeof v === 'boolean') {
-                        cls = v ? 'bool-true' : 'bool-false'; display = String(v);
-                    } else if (typeof v === 'bigint') {
-                        cls = 'num-val'; display = v.toLocaleString();
-                    } else if (typeof v === 'number') {
-                        cls = 'num-val';
-                        display = Number.isInteger(v) ? v.toLocaleString() : v.toPrecision(6);
-                    } else if (v instanceof Date) {
-                        display = v.toISOString().replace('T', ' ').slice(0, 19);
-                    } else if (typeof v === 'object') {
-                        display = JSON.stringify(v);
-                    } else {
-                        display = String(v);
-                    }
-                    return `<td class="${cls}" title="${display.replace(/"/g, '&quot;')}">${display}</td>`;
+                    let v = row[h], cls = '', display = '';
+                    if (v === null || v === undefined) { cls = 'null-val'; display = 'null'; }
+                    else if (typeof v === 'boolean') { cls = v ? 'bool-true' : 'bool-false'; display = String(v); }
+                    else if (typeof v === 'bigint') { cls = 'num-val'; display = v.toLocaleString(); }
+                    else if (typeof v === 'number') { cls = 'num-val'; display = Number.isInteger(v) ? v.toLocaleString() : v.toPrecision(6); }
+                    else if (v instanceof Date) { cls = 'date-val'; display = v.toISOString().replace('T', ' ').slice(0, 19); }
+                    else if (typeof v === 'object') { display = JSON.stringify(v); }
+                    else { display = String(v); }
+                    return `<td class="${cls}" data-col="${ci}" data-row-idx="${start+idx}" title="${display.replace(/"/g,'&quot;')}">${display}</td>`;
                 }).join('')}
             </tr>`;
         }).join('');
+
+        // Cell click → cell modal
+        $('tBody').querySelectorAll('td[data-col]').forEach(td => {
+            td.addEventListener('click', () => {
+                const colIdx = parseInt(td.dataset.col);
+                const rowIdx = parseInt(td.dataset.rowIdx);
+                openCellModal(rowIdx, colIdx);
+            });
+        });
     }
 
+    // ── Pagination ───────────────────────────────────────
     function renderPagination() {
-        const totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
-        const pg = document.getElementById('pagination');
-
+        const total = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+        const pg = $('pagination');
+        const half = 3, start = Math.max(0, Math.min(currentPage - half, total - 7)), end = Math.min(total - 1, start + 6);
         let btns = '';
-        const maxVisible = 7;
-        const half = Math.floor(maxVisible / 2);
-        let startP = Math.max(0, currentPage - half);
-        let endP = Math.min(totalPages - 1, startP + maxVisible - 1);
-        if (endP - startP < maxVisible - 1) startP = Math.max(0, endP - maxVisible + 1);
-
-        for (let i = startP; i <= endP; i++) {
-            btns += `<button class="page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">${i + 1}</button>`;
-        }
-
+        for (let i = start; i <= end; i++) btns += `<button class="page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">${i + 1}</button>`;
         pg.innerHTML = `
             <button class="page-btn" id="pgFirst" ${currentPage === 0 ? 'disabled' : ''}>«</button>
-            <button class="page-btn" id="pgPrev"  ${currentPage === 0 ? 'disabled' : ''}>‹</button>
+            <button class="page-btn" id="pgPrev" ${currentPage === 0 ? 'disabled' : ''}>‹</button>
             ${btns}
-            <button class="page-btn" id="pgNext" ${currentPage >= totalPages - 1 ? 'disabled' : ''}>›</button>
-            <button class="page-btn" id="pgLast" ${currentPage >= totalPages - 1 ? 'disabled' : ''}>»</button>
-            <span id="pageInfo">${currentPage + 1} / ${totalPages}</span>
-            <select class="page-size-select" id="pageSizeSelect">
-                ${PAGE_SIZES.map(s => `<option value="${s}" ${s === pageSize ? 'selected' : ''}>${s} rows</option>`).join('')}
-            </select>`;
+            <button class="page-btn" id="pgNext" ${currentPage >= total - 1 ? 'disabled' : ''}>›</button>
+            <button class="page-btn" id="pgLast" ${currentPage >= total - 1 ? 'disabled' : ''}>»</button>
+            <span id="pageInfo">${currentPage + 1} / ${total}</span>
+            <select class="page-size-select" id="pageSizeSelect">${PAGE_SIZES.map(s => `<option value="${s}" ${s === pageSize ? 'selected' : ''}>${s} rows</option>`).join('')}</select>`;
 
-        pg.querySelectorAll('.page-btn[data-page]').forEach(btn => {
-            btn.addEventListener('click', () => { currentPage = parseInt(btn.dataset.page); renderTable(); renderPagination(); });
-        });
+        pg.querySelectorAll('.page-btn[data-page]').forEach(b => b.addEventListener('click', () => { currentPage = parseInt(b.dataset.page); renderTable(); renderPagination(); }));
+        const go = p => { currentPage = Math.max(0, Math.min(total - 1, p)); renderTable(); renderPagination(); };
+        $('pgFirst').addEventListener('click', () => go(0));
+        $('pgPrev').addEventListener('click', () => go(currentPage - 1));
+        $('pgNext').addEventListener('click', () => go(currentPage + 1));
+        $('pgLast').addEventListener('click', () => go(total - 1));
+        $('pageSizeSelect').addEventListener('change', e => { pageSize = parseInt(e.target.value); currentPage = 0; renderTable(); renderPagination(); });
+    }
 
-        const go = (p) => { currentPage = Math.max(0, Math.min(totalPages - 1, p)); renderTable(); renderPagination(); };
-        document.getElementById('pgFirst').addEventListener('click', () => go(0));
-        document.getElementById('pgPrev').addEventListener('click',  () => go(currentPage - 1));
-        document.getElementById('pgNext').addEventListener('click',  () => go(currentPage + 1));
-        document.getElementById('pgLast').addEventListener('click',  () => go(totalPages - 1));
+    // ═══════════════════════════════════════════════════
+    //  COLUMN STATS MODAL
+    // ═══════════════════════════════════════════════════
+    function openColStats(colIdx) {
+        const h = headers[colIdx];
+        const t = colTypes[colIdx];
+        const vals = allRows.map(r => r[h]);
+        const nonNull = vals.filter(v => v !== null && v !== undefined);
+        const nullCount = vals.length - nonNull.length;
+        const nullPct = (nullCount / vals.length * 100).toFixed(1);
+        const fillPct = (nonNull.length / vals.length * 100).toFixed(1);
 
-        document.getElementById('pageSizeSelect').addEventListener('change', e => {
-            pageSize = parseInt(e.target.value);
-            currentPage = 0;
-            renderTable();
-            renderPagination();
+        $('csColName').textContent = h;
+        const typeEl = $('csColType');
+        typeEl.textContent = TYPE_LABEL[t];
+        typeEl.className = `modal-col-type ${TYPE_CLASS[t]}`;
+
+        let bodyHTML = '';
+
+        // Stats grid top
+        const uniqueVals = new Set(nonNull.map(v => String(v)));
+        bodyHTML += `
+            <div class="stats-grid">
+                <div class="stat-card accent">
+                    <div class="stat-label">Total Values</div>
+                    <div class="stat-value accent">${vals.length.toLocaleString()}</div>
+                </div>
+                <div class="stat-card accent2">
+                    <div class="stat-label">Unique Values</div>
+                    <div class="stat-value accent2">${uniqueVals.size.toLocaleString()}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Non-Null</div>
+                    <div class="stat-value">${nonNull.length.toLocaleString()} <small>(${fillPct}%)</small></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Null / Missing</div>
+                    <div class="stat-value">${nullCount.toLocaleString()} <small>(${nullPct}%)</small></div>
+                </div>
+            </div>`;
+
+        // Fill rate bar
+        bodyHTML += `
+            <div class="null-bar-wrap">
+                <div class="null-bar-label">
+                    <span>Fill Rate</span>
+                    <span style="color:${nullCount > 0 ? 'var(--accent3)' : 'var(--accent)'};">${fillPct}% filled</span>
+                </div>
+                <div class="null-bar-track">
+                    <div class="null-bar-fill ${nullCount > 0 ? 'has-nulls' : ''}" style="width:${fillPct}%"></div>
+                </div>
+            </div>`;
+
+        // Numeric extras
+        if (t === 'num') {
+            const nums = nonNull.map(v => typeof v === 'bigint' ? Number(v) : Number(v)).filter(n => !isNaN(n));
+            if (nums.length > 0) {
+                nums.sort((a, b) => a - b);
+                const sum = nums.reduce((a, b) => a + b, 0);
+                const mean = sum / nums.length;
+                const med = nums[Math.floor(nums.length / 2)];
+                const min = nums[0], max = nums[nums.length - 1];
+                const variance = nums.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / nums.length;
+                const std = Math.sqrt(variance);
+
+                const fmt = n => Math.abs(n) >= 1e6 ? (n / 1e6).toFixed(2) + 'M' : Math.abs(n) >= 1e3 ? (n / 1e3).toFixed(1) + 'K' : n.toPrecision(4);
+
+                bodyHTML += `
+                    <div class="section-title">Numeric Summary</div>
+                    <div class="num-stat-row">
+                        <div class="num-mini-card"><div class="num-mini-label">Min</div><div class="num-mini-value">${fmt(min)}</div></div>
+                        <div class="num-mini-card"><div class="num-mini-label">Mean</div><div class="num-mini-value">${fmt(mean)}</div></div>
+                        <div class="num-mini-card"><div class="num-mini-label">Median</div><div class="num-mini-value">${fmt(med)}</div></div>
+                        <div class="num-mini-card"><div class="num-mini-label">Max</div><div class="num-mini-value">${fmt(max)}</div></div>
+                        <div class="num-mini-card"><div class="num-mini-label">Std Dev</div><div class="num-mini-value">${fmt(std)}</div></div>
+                    </div>`;
+
+                // Mini histogram
+                const bins = 20;
+                const range = max - min || 1;
+                const binCounts = new Array(bins).fill(0);
+                nums.forEach(n => { const b = Math.min(bins - 1, Math.floor((n - min) / range * bins)); binCounts[b]++; });
+                const maxBin = Math.max(...binCounts);
+                const colors = ['var(--accent)', 'var(--accent2)', 'var(--accent3)', 'var(--accent4)'];
+                bodyHTML += `<div class="section-title">Distribution</div>
+                    <div class="histogram">
+                        ${binCounts.map((c, i) => `<div class="hist-bar" style="height:${Math.max(4, c / maxBin * 100)}%; background:${colors[Math.floor(i / bins * colors.length)]}" title="${c} values"></div>`).join('')}
+                    </div>`;
+            }
+        }
+
+        // Top values frequency
+        const freq = {};
+        nonNull.forEach(v => { const k = String(v); freq[k] = (freq[k] || 0) + 1; });
+        const top = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 10);
+        if (top.length > 0) {
+            const maxFreq = top[0][1];
+            const COLORS = ['var(--accent)', 'var(--accent2)', 'var(--accent3)', 'var(--accent4)'];
+            bodyHTML += `<div class="section-title" style="margin-top:0.25rem">Top Values${uniqueVals.size > 10 ? ` (top 10 of ${uniqueVals.size.toLocaleString()})` : ''}</div>`;
+            top.forEach(([val, cnt], i) => {
+                const pct = (cnt / maxFreq * 100).toFixed(0);
+                const color = COLORS[i % COLORS.length];
+                bodyHTML += `
+                    <div class="freq-item">
+                        <div class="freq-label" title="${val}">${val === '' ? '<em style="opacity:0.5">empty</em>' : val}</div>
+                        <div class="freq-bar-wrap">
+                            <div class="freq-bar-track">
+                                <div class="freq-bar-fill" style="width:${pct}%;background:${color}"></div>
+                            </div>
+                        </div>
+                        <div class="freq-count">${cnt.toLocaleString()}</div>
+                    </div>`;
+            });
+        }
+
+        $('colStatsBody').innerHTML = bodyHTML;
+        $('colStatsBackdrop').classList.add('show');
+    }
+
+    $('colStatsClose').addEventListener('click', () => $('colStatsBackdrop').classList.remove('show'));
+    $('colStatsBackdrop').addEventListener('click', e => { if (e.target === $('colStatsBackdrop')) $('colStatsBackdrop').classList.remove('show'); });
+
+    // ═══════════════════════════════════════════════════
+    //  SMART VALUE RENDERER
+    // ═══════════════════════════════════════════════════
+
+    // Try to parse a value as JSON (handles string-encoded JSON)
+    function tryParseJSON(val) {
+        if (typeof val === 'object' && val !== null) return { ok: true, parsed: val };
+        if (typeof val === 'string') {
+            const s = val.trim();
+            if ((s.startsWith('{') && s.endsWith('}')) || (s.startsWith('[') && s.endsWith(']'))) {
+                try { return { ok: true, parsed: JSON.parse(s) }; } catch (_) {}
+            }
+        }
+        return { ok: false, parsed: null };
+    }
+
+    // Detect if a string looks like an ISO date
+    function isISODate(s) {
+        return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(s);
+    }
+
+    function isURL(s) {
+        return typeof s === 'string' && /^https?:\/\//i.test(s);
+    }
+
+    // Status/risk badge
+    const BADGE_KEYS = new Set(['riskLevel', 'risk', 'level', 'severity', 'status', 'state', 'result', 'outcome', 'priority', 'health']);
+    const STATUS_VALS = new Set(['high','medium','moderate','low','passed','failed','success','error','ok','pending','running','warning','info','unknown','true','false']);
+
+    function renderBadge(val) {
+        const slug = String(val).toLowerCase().replace(/[^a-z]/g, '');
+        if (STATUS_VALS.has(slug)) {
+            return `<span class="sv-badge badge-${slug}">${val}</span>`;
+        }
+        return null;
+    }
+
+    // Render a float 0-1 as a progress bar
+    function isConfidenceKey(k) {
+        return /conf|score|prob|percent|rate|pct|ratio|weight/i.test(k);
+    }
+
+    function renderProgress(val, key) {
+        const num = Number(val);
+        if (isNaN(num)) return null;
+        // Could be 0-1 or 0-100
+        const pct = num <= 1 ? num * 100 : Math.min(num, 100);
+        const color = pct >= 80 ? 'var(--accent)' : pct >= 50 ? 'var(--accent4)' : 'var(--accent3)';
+        return `<div class="sv-progress-wrap">
+            <div class="sv-progress-track"><div class="sv-progress-fill" style="width:${pct.toFixed(1)}%;background:${color}"></div></div>
+            <div class="sv-progress-label">${(num <= 1 ? (num * 100).toFixed(1) : num.toFixed(1))}%</div>
+        </div>`;
+    }
+
+    // Render a single primitive value
+    function renderPrimitive(val, key) {
+        if (val === null || val === undefined) return `<span class="sv-null">null</span>`;
+        if (typeof val === 'boolean') return `<span class="${val ? 'sv-bool-true' : 'sv-bool-false'}">${val}</span>`;
+        if (isISODate(val)) {
+            const d = new Date(val);
+            const fmt = isNaN(d) ? val : d.toLocaleString('en-US', { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+            return `<span class="sv-date">${fmt}</span>`;
+        }
+        if (isURL(val)) return `<a class="sv-url" href="${val}" target="_blank" rel="noopener">${val}</a>`;
+        if (typeof val === 'number' || typeof val === 'bigint') {
+            const num = Number(val);
+            if (key && isConfidenceKey(key)) {
+                const prog = renderProgress(num, key);
+                if (prog) return prog;
+            }
+            return `<span class="sv-num">${Number.isInteger(num) ? num.toLocaleString() : num.toPrecision(6)}</span>`;
+        }
+        if (typeof val === 'string') {
+            // Badge check
+            if (key) {
+                const kl = key.toLowerCase();
+                const couldBeBadge = BADGE_KEYS.has(kl) || /status|risk|level|result|state/i.test(kl);
+                if (couldBeBadge) {
+                    const b = renderBadge(val);
+                    if (b) return b;
+                }
+            }
+            const esc = val.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            if (esc.length > 120) return `<span class="sv-long-str">${esc}</span>`;
+            return `<span>${esc}</span>`;
+        }
+        return `<span>${String(val)}</span>`;
+    }
+
+    // Check if array is array-of-same-key-objects (table-renderable)
+    function isObjectArray(arr) {
+        if (!Array.isArray(arr) || arr.length === 0) return false;
+        return arr.every(item => item !== null && typeof item === 'object' && !Array.isArray(item));
+    }
+
+    // Check if array looks like a timeline: objects with date-ish + status fields
+    function isTimeline(arr) {
+        if (!isObjectArray(arr)) return false;
+        return arr.some(item => {
+            const keys = Object.keys(item);
+            return keys.some(k => isISODate(item[k]) || /^at$|^time|^date|timestamp/i.test(k));
         });
     }
 
-    // ── Search & Sort reset ──────────────────────────────
-    let searchTimeout;
-    document.getElementById('searchInput').addEventListener('input', e => {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            searchTerm = e.target.value.trim();
-            applyFiltersAndSort();
-        }, 200);
+    // Render object-array as timeline
+    function renderTimeline(arr) {
+        return `<div class="sv-timeline">${arr.map(item => {
+            const keys = Object.keys(item);
+            const timeKey = keys.find(k => isISODate(item[k]) || /^at$|^time|^date|timestamp/i.test(k));
+            const statusKey = keys.find(k => /status|result|state|outcome/i.test(k));
+            const timeVal = timeKey ? item[timeKey] : null;
+            const statusVal = statusKey ? item[statusKey] : null;
+
+            const timeFmt = timeVal && isISODate(timeVal)
+                ? new Date(timeVal).toLocaleString('en-US', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' })
+                : (timeVal ? String(timeVal) : '—');
+
+            const slug = statusVal ? String(statusVal).toLowerCase().replace(/[^a-z]/g, '') : '';
+            const dotColor = slug === 'passed' || slug === 'success' || slug === 'ok' ? 'var(--accent)'
+                           : slug === 'failed' || slug === 'error' ? 'var(--accent3)'
+                           : 'var(--accent4)';
+            const badge = statusVal ? renderBadge(statusVal) || `<span>${statusVal}</span>` : '';
+
+            return `<div class="sv-tl-item">
+                <div class="sv-tl-dot" style="background:${dotColor}"></div>
+                <div class="sv-tl-time">${timeFmt}</div>
+                <div class="sv-tl-status">${badge}</div>
+            </div>`;
+        }).join('')}</div>`;
+    }
+
+    // Render object-array as a table
+    function renderObjectTable(arr) {
+        const allKeys = [...new Set(arr.flatMap(o => Object.keys(o)))].slice(0, 8);
+        return `<div class="sv-obj-table-wrap"><table class="sv-obj-table">
+            <thead><tr>${allKeys.map(k => `<th>${k}</th>`).join('')}</tr></thead>
+            <tbody>${arr.map(row => `<tr>${allKeys.map(k => {
+                const v = row[k];
+                if (v === null || v === undefined) return `<td class="sv-null">null</td>`;
+                if (isISODate(v)) return `<td class="sv-date">${new Date(v).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</td>`;
+                const slug = String(v).toLowerCase().replace(/[^a-z]/g,'');
+                if (STATUS_VALS.has(slug)) {
+                    const dotColor = slug==='passed'||slug==='success'||slug==='ok'?'var(--accent)':slug==='failed'||slug==='error'?'var(--accent3)':'var(--accent4)';
+                    return `<td><span style="display:inline-flex;align-items:center;gap:4px"><span style="width:5px;height:5px;border-radius:50%;background:${dotColor};display:inline-block"></span>${v}</span></td>`;
+                }
+                const display = typeof v === 'number' ? Number(v).toLocaleString() : String(v);
+                return `<td title="${display}">${display}</td>`;
+            }).join('')}</tr>`).join('')}
+            </tbody>
+        </table></div>`;
+    }
+
+    // Render array of strings as numbered list
+    function renderStringList(arr) {
+        return `<div class="sv-strlist">${arr.map((s, i) =>
+            `<div class="sv-strlist-item"><span class="sv-strlist-idx">${i + 1}</span><span>${String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}</span></div>`
+        ).join('')}</div>`;
+    }
+
+    // Core: render any value into HTML
+    function renderValue(val, key, depth) {
+        depth = depth || 0;
+        const { ok, parsed } = tryParseJSON(val);
+        if (ok) val = parsed;
+
+        if (val === null || val === undefined || typeof val !== 'object') {
+            return renderPrimitive(val, key);
+        }
+
+        if (Array.isArray(val)) {
+            if (val.length === 0) return `<span class="sv-null">[] empty array</span>`;
+            if (val.every(i => typeof i === 'string')) return renderStringList(val);
+            if (isTimeline(val)) return renderTimeline(val);
+            if (isObjectArray(val)) return renderObjectTable(val);
+            // mixed array
+            return renderStringList(val.map(i => typeof i === 'object' ? JSON.stringify(i) : String(i)));
+        }
+
+        // Plain object
+        const entries = Object.entries(val);
+        if (entries.length === 0) return `<span class="sv-null">{} empty object</span>`;
+
+        // Separate "leaf" entries from nested ones
+        const leaves = entries.filter(([, v]) => {
+            if (v === null || v === undefined || typeof v !== 'object') return true;
+            if (Array.isArray(v) && v.every(i => typeof i !== 'object')) return true;
+            return false;
+        });
+        const nested = entries.filter(([, v]) => {
+            if (v === null || v === undefined || typeof v !== 'object') return false;
+            if (Array.isArray(v) && v.every(i => typeof i !== 'object')) return false;
+            return true;
+        });
+
+        let html = '';
+
+        // Leaf key-value pairs
+        if (leaves.length > 0) {
+            html += `<div class="${depth > 0 ? 'sv-nested' : ''}">`;
+            leaves.forEach(([k, v]) => {
+                html += `<div class="sv-kv">
+                    <div class="sv-key" title="${k}">${k}</div>
+                    <div class="sv-val">${renderPrimitive(v, k)}</div>
+                </div>`;
+            });
+            html += `</div>`;
+        }
+
+        // Nested objects/arrays as collapsible sections
+        nested.forEach(([k, v]) => {
+            const arr = Array.isArray(v);
+            const len = arr ? v.length : Object.keys(v).length;
+            const hint = arr ? `${len} item${len !== 1 ? 's' : ''}` : `${len} key${len !== 1 ? 's' : ''}`;
+            html += `<div class="sv-section" data-key="${k}">
+                <div class="sv-section-toggle" onclick="this.closest('.sv-section').classList.toggle('collapsed')">
+                    <em class="sv-chevron">▾</em>
+                    <span>${k}</span>
+                    <span style="font-weight:400;opacity:0.5;margin-left:0.25rem">${hint}</span>
+                </div>
+                <div class="sv-section-body">${renderValue(v, k, depth + 1)}</div>
+            </div>`;
+        });
+
+        return html;
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  CELL VALUE MODAL
+    // ═══════════════════════════════════════════════════
+    let _cmRawString = '';
+
+    function openCellModal(rowIdx, colIdx) {
+        activeColIndex = colIdx;
+        const row = filteredRows[rowIdx];
+        if (!row) return;
+        const colName = headers[colIdx];
+        const rawVal = row[colName];
+
+        // Build raw string for copy/raw view
+        let rawStr = '';
+        if (rawVal === null || rawVal === undefined) rawStr = 'null';
+        else if (typeof rawVal === 'bigint') rawStr = rawVal.toString();
+        else if (rawVal instanceof Date) rawStr = rawVal.toISOString();
+        else if (typeof rawVal === 'object') rawStr = JSON.stringify(rawVal, null, 2);
+        else rawStr = String(rawVal);
+        _cmRawString = rawStr;
+
+        $('cmColName').textContent = colName;
+        $('cmRowNum').textContent = `Row ${rowIdx + 1}`;
+
+        // Detect if JSON-ish
+        const { ok: isJSON, parsed } = tryParseJSON(rawVal);
+        const isComplex = isJSON && typeof parsed === 'object' && parsed !== null;
+
+        // Show/hide tabs
+        const tabs = $('cmTabs');
+        tabs.style.display = isComplex ? 'flex' : 'none';
+
+        // Smart view
+        const smartEl = $('cmSmartView');
+        const rawViewEl = $('cmRawView');
+        $('cmRawText').textContent = rawStr;
+
+        if (isComplex) {
+            // Stats row (key count / array length)
+            const arr = Array.isArray(parsed);
+            const cnt = arr ? parsed.length : Object.keys(parsed).length;
+            const byteLen = new Blob([rawStr]).size;
+            const statsHtml = `<div class="sv-stats-row">
+                <div class="sv-stat-chip">${arr ? '[ ]' : '{ }'} ${arr ? 'Array' : 'Object'}</div>
+                <div class="sv-stat-chip"><span>${cnt}</span> ${arr ? 'items' : 'keys'}</div>
+                <div class="sv-stat-chip"><span>${byteLen >= 1024 ? (byteLen/1024).toFixed(1)+'kb' : byteLen+'b'}</span> JSON</div>
+            </div>`;
+            smartEl.innerHTML = `<div class="cell-value-smart">${statsHtml}${renderValue(rawVal, colName, 0)}</div>`;
+        } else {
+            // Scalar — just a styled block
+            smartEl.innerHTML = `<div class="cell-value-smart"><div class="sv-scalar-block">${renderPrimitive(rawVal, colName)}</div></div>`;
+        }
+
+        smartEl.style.display = '';
+        rawViewEl.style.display = 'none';
+
+        // Reset tabs
+        $('cmTabs').querySelectorAll('.cm-tab').forEach(t => t.classList.remove('active'));
+        const firstTab = $('cmTabs').querySelector('.cm-tab');
+        if (firstTab) firstTab.classList.add('active');
+
+        // Meta chips
+        const byteLen = new Blob([rawStr]).size;
+        const t = colTypes[colIdx];
+        $('cmMeta').innerHTML = `
+            <span class="cell-meta-chip ${TYPE_CLASS[t]}">${TYPE_LABEL[t]}</span>
+            ${isComplex ? `<span class="cell-meta-chip">${rawStr.length} chars</span>` : ''}
+            ${byteLen > 256 ? `<span class="cell-meta-chip">${(byteLen/1024).toFixed(1)}kb</span>` : ''}
+        `;
+
+        $('cellModalBackdrop').classList.add('show');
+    }
+
+    // Tab switching
+    document.addEventListener('click', e => {
+        const tab = e.target.closest('.cm-tab');
+        if (!tab) return;
+        const view = tab.dataset.view;
+        $('cmTabs').querySelectorAll('.cm-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        $('cmSmartView').style.display = view === 'smart' ? '' : 'none';
+        $('cmRawView').style.display = view === 'raw' ? '' : 'none';
     });
 
-    document.getElementById('clearSort').addEventListener('click', () => {
-        sortCol = null; sortDir = 1;
-        applyFiltersAndSort();
+    // Copy button
+    const copyBtn = $('cmCopyBtn');
+    copyBtn.addEventListener('click', () => {
+        const val = _cmRawString;
+        const doFeedback = () => {
+            copyBtn.textContent = '✓ Copied!';
+            copyBtn.classList.add('copied');
+            setTimeout(() => { copyBtn.textContent = '⎘ Copy value'; copyBtn.classList.remove('copied'); }, 1800);
+        };
+        navigator.clipboard.writeText(val).then(doFeedback).catch(() => {
+            const ta = document.createElement('textarea');
+            ta.value = val; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+            doFeedback();
+        });
     });
+
+    // Open col stats from cell modal
+    $('cmColStatsBtn').addEventListener('click', () => {
+        $('cellModalBackdrop').classList.remove('show');
+        if (activeColIndex !== null) openColStats(activeColIndex);
+    });
+
+    $('cellModalClose').addEventListener('click', () => $('cellModalBackdrop').classList.remove('show'));
+    $('cellModalBackdrop').addEventListener('click', e => { if (e.target === $('cellModalBackdrop')) $('cellModalBackdrop').classList.remove('show'); });
+
+    // ESC closes both modals
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { $('colStatsBackdrop').classList.remove('show'); $('cellModalBackdrop').classList.remove('show'); }
+    });
+
+    // ── Search / reset ───────────────────────────────────
+    let stTimeout;
+    $('searchInput').addEventListener('input', e => {
+        clearTimeout(stTimeout);
+        stTimeout = setTimeout(() => { searchTerm = e.target.value.trim(); applyFiltersAndSort(); }, 180);
+    });
+
+    $('clearSort').addEventListener('click', () => { sortCol = null; sortDir = 1; applyFiltersAndSort(); });
 
     // ── Helpers ──────────────────────────────────────────
-    function setStatus(type, msg) {
-        fileStatus.className = type;
-        fileStatus.textContent = msg;
-        fileStatus.style.display = 'block';
-    }
-
+    function setStatus(type, msg) { fileStatus.className = type; fileStatus.textContent = msg; fileStatus.style.display = 'block'; }
     function formatSize(bytes) {
-        if (bytes >= 1024 * 1024 * 1024) return { val: (bytes / (1024**3)).toFixed(2), unit: ' GB' };
-        if (bytes >= 1024 * 1024)        return { val: (bytes / (1024**2)).toFixed(2), unit: ' MB' };
+        if (bytes >= 1073741824) return { val: (bytes / 1073741824).toFixed(2), unit: ' GB' };
+        if (bytes >= 1048576) return { val: (bytes / 1048576).toFixed(2), unit: ' MB' };
         return { val: (bytes / 1024).toFixed(1), unit: ' KB' };
     }
 })();
